@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>赛博浮生 H5 布局预览</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060a10;color:#e0e5ea;font-family:'PingFang SC','Microsoft YaHei',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;max-width:430px;margin:0 auto;border-left:1px solid #1a2540;border-right:1px solid #1a2540}
+
+/* 新闻滚动条 */
+.news-bar{height:26px;background:linear-gradient(90deg,#0d1520,#121d2e,#0d1520);border-bottom:1px solid #1a2a45;display:flex;align-items:center;overflow:hidden;flex-shrink:0}
+.news-label{background:#1a3050;color:#4ae;padding:2px 8px;font-size:9px;font-weight:bold;white-space:nowrap;z-index:2;letter-spacing:1px}
+.news-scroll{flex:1;overflow:hidden;position:relative;height:100%}
+.news-text{position:absolute;white-space:nowrap;color:#5a7a9a;font-size:10px;line-height:26px;animation:scrollNews 25s linear infinite;left:100%}
+@keyframes scrollNews{0%{transform:translateX(0)}100%{transform:translateX(-200%)}}
+
+/* 状态栏 */
+.status-bar{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:linear-gradient(180deg,#0f1825,#0a0e14);border-bottom:1px solid #152035;flex-shrink:0}
+.stat-item{display:flex;flex-direction:column;align-items:center;gap:1px}
+.stat-label{font-size:8px;color:#4a6a8a;letter-spacing:0.5px}
+.stat-value{font-size:12px;font-weight:bold}
+.stat-value.cash{color:#22c55e}
+.stat-value.debt{color:#ef4444}
+.stat-value.hp{color:#f59e0b}
+.stat-value.day{color:#4ae}
+.hp-bar{width:40px;height:3px;background:#1a2540;border-radius:2px;overflow:hidden}
+.hp-fill{height:100%;background:linear-gradient(90deg,#f59e0b,#eab308);border-radius:2px}
+
+/* 主内容区 */
+.main-content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* 标签页 */
+.tab-bar{display:flex;border-bottom:1px solid #152035;background:#0c1220;flex-shrink:0}
+.tab{flex:1;text-align:center;padding:9px 0;font-size:12px;color:#4a6a8a;cursor:pointer;position:relative;transition:all 0.2s;user-select:none}
+.tab.active{color:#4ae;font-weight:bold}
+.tab.active::after{content:'';position:absolute;bottom:0;left:25%;right:25%;height:2px;background:#4ae;border-radius:1px}
+.tab .badge{position:absolute;top:3px;right:calc(50% - 28px);background:#ef4444;color:#fff;font-size:8px;padding:1px 4px;border-radius:6px;min-width:14px;text-align:center}
+
+/* 面板容器 */
+.panel-container{flex:1;overflow-y:auto;overflow-x:hidden}
+.panel{display:none;padding:8px 10px}
+.panel.active{display:block}
+
+/* 地点列表 */
+.loc-section-title{font-size:10px;color:#4a6a8a;padding:4px 0 8px;letter-spacing:1px;display:flex;justify-content:space-between}
+.location-list{display:flex;flex-direction:column;gap:5px}
+.loc-item{display:flex;align-items:center;gap:8px;padding:9px 10px;background:linear-gradient(135deg,rgba(15,25,45,0.8),rgba(20,30,50,0.6));border:1px solid #1a2a45;border-radius:8px;cursor:pointer;transition:all 0.15s}
+.loc-item.active{border-color:#2a5a8a;background:linear-gradient(135deg,rgba(20,40,70,0.8),rgba(25,50,80,0.6))}
+.loc-icon{font-size:20px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(20,40,70,0.5);border-radius:8px;flex-shrink:0}
+.loc-info{flex:1;min-width:0}
+.loc-name{font-size:12px;font-weight:bold;color:#c0d0e0}
+.loc-desc{font-size:9px;color:#4a6a8a;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loc-arrow{color:#2a4a6a;font-size:14px;flex-shrink:0}
+
+/* 商品列表 */
+.trade-header{font-size:10px;color:#4a6a8a;padding:4px 0 8px;display:flex;justify-content:space-between;letter-spacing:0.5px}
+.item-list{display:flex;flex-direction:column;gap:4px}
+.item-row{display:flex;align-items:center;padding:7px 10px;background:rgba(15,25,45,0.6);border:1px solid #141e30;border-radius:6px;cursor:pointer;transition:all 0.15s}
+.item-row:active{background:rgba(25,45,75,0.6);border-color:#2a4a6a}
+.item-name{flex:1;font-size:12px;color:#b0c0d0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-price{font-size:12px;font-weight:bold;color:#22c55e;min-width:55px;text-align:right;flex-shrink:0}
+.item-price.low{color:#ef4444}
+.item-actions{display:flex;gap:3px;margin-left:6px;flex-shrink:0}
+.btn-buy,.btn-sell{width:26px;height:26px;border-radius:4px;border:1px solid;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.btn-buy{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.3);color:#22c55e}
+.btn-sell{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#ef4444}
+.item-row.locked{opacity:0.3}
+.item-row.locked .btn-buy,.item-row.locked .btn-sell{opacity:0.3;pointer-events:none}
+
+/* 仓库 */
+.wh-header{display:flex;justify-content:space-between;align-items:center;padding:4px 0 10px}
+.wh-capacity{font-size:10px;color:#4a6a8a}
+.wh-capacity b{color:#4ae}
+.wh-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.wh-card{background:rgba(15,25,45,0.6);border:1px solid #141e30;border-radius:8px;padding:10px 8px;text-align:center}
+.wh-card .wh-icon{font-size:22px;margin-bottom:3px}
+.wh-card .wh-name{font-size:10px;color:#8a9aaa;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wh-card .wh-qty{font-size:15px;font-weight:bold;color:#4ae}
+.wh-card.empty{opacity:0.25;border-style:dashed}
+.wh-card.empty .wh-qty{font-size:11px;color:#3a5a7a}
+
+/* 底部功能栏 */
+.bottom-bar{height:52px;display:flex;border-top:1px solid #152035;background:#0c1220;flex-shrink:0}
+.venue-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;transition:all 0.15s;border-right:1px solid #101828;user-select:none}
+.venue-btn:last-child{border-right:none}
+.venue-btn:active{background:rgba(30,50,80,0.4)}
+.venue-btn .vv-icon{font-size:17px}
+.venue-btn .vv-name{font-size:9px;color:#6a8aaa}
+.venue-btn.disabled{opacity:0.35;pointer-events:none}
+
+/* 扫描线 */
+.scan-line{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,200,255,0.008) 2px,rgba(0,200,255,0.008) 4px);z-index:100}
+
+/* 页面标注 */
+.page-annotation{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(255,200,50,0.92);color:#000;font-size:10px;padding:4px 12px;border-radius:4px;z-index:200;white-space:nowrap;font-weight:bold;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- 新闻滚动条 -->
+<div class="news-bar">
+  <div class="news-label">快讯</div>
+  <div class="news-scroll">
+    <div class="news-text">AI外卖员集体罢工要求升级算力 ｜ 华强北新到一批来路不明显卡 ｜ 2036年数字呼吸税正式实施 ｜ BTC突破历史新高 ｜ 某大厂宣布组织优化大量设备流入二手市场…</div>
+  </div>
+</div>
+
+<!-- 状态栏 -->
+<div class="status-bar">
+  <div class="stat-item">
+    <span class="stat-label">现金</span>
+    <span class="stat-value cash">¥12,580</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">负债</span>
+    <span class="stat-value debt">¥8,234</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">健康</span>
+    <span class="stat-value hp">85</span>
+    <div class="hp-bar"><div class="hp-fill" style="width:85%"></div></div>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">天数</span>
+    <span class="stat-value day">18/50</span>
+  </div>
+</div>
+
+<!-- 主内容 -->
+<div class="main-content">
+  <!-- 标签页 -->
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('trade',this)">交易</div>
+    <div class="tab" onclick="switchTab('warehouse',this)">仓库<span class="badge">3</span></div>
+    <div class="tab" onclick="switchTab('map',this)">地点</div>
+  </div>
+
+  <div class="panel-container">
+    <!-- 交易面板 -->
+    <div class="panel active" id="panel-trade">
+      <div class="trade-header">
+        <span>城中村黑市 · 今日价格</span>
+        <span>刷新剩余 32天</span>
+      </div>
+      <div class="item-list">
+        <div class="item-row">
+          <span class="item-name">临期合成牛排</span>
+          <span class="item-price">¥18</span>
+          <div class="item-actions"><div class="btn-buy">买</div><div class="btn-sell">卖</div></div>
+        </div>
+        <div class="item-row">
+          <span class="item-name">复古拉卜卜</span>
+          <span class="item-price">¥135</span>
+          <div class="item-actions"><div class="btn-buy">买</div><div class="btn-sell">卖</div></div>
+        </div>
+        <div class="item-row">
+          <span class="item-name">二手外卖无人机</span>
+          <span class="item-price">¥380</span>
+          <div class="item-actions"><div class="btn-buy">买</div><div class="btn-sell">卖</div></div>
+        </div>
+        <div class="item-row">
+          <span class="item-name">山寨VR眼镜</span>
+          <span class="item-price low">¥210↓</span>
+          <div class="item-actions"><div class="btn-buy">买</div><div class="btn-sell">卖</div></div>
+        </div>
+        <div class="item-row">
+          <span class="item-name">来路不明显卡</span>
+          <span class="item-price">¥980</span>
+          <div class="item-actions"><div class="btn-buy">买</div><div class="btn-sell">卖</div></div>
+        </div>
+        <div class="item-row">
+          <span class="item-name">破解版iPhone 30</span>
+          <span class="item-price">¥2,800</span>
+          <div class="item-actions"><div class="btn-buy">买</div><div class="btn-sell">卖</div></div>
+        </div>
+        <div class="item-row locked">
+          <span class="item-name">走私基因优化剂</span>
+          <span class="item-price" style="color:#3a5a7a">???</span>
+          <div class="item-actions"><div class="btn-buy">买</div><div class="btn-sell">卖</div></div>
+        </div>
+        <div class="item-row locked">
+          <span class="item-name">退役陪伴机器人</span>
+          <span class="item-price" style="color:#3a5a7a">???</span>
+          <div class="item-actions"><div class="btn-buy">买</div><div class="btn-sell">卖</div></div>
+        </div>
+        <div class="item-row locked">
+          <span class="item-name">改装无人车</span>
+          <span class="item-price" style="color:#3a5a7a">???</span>
+          <div class="item-actions"><div class="btn-buy">买</div><div class="btn-sell">卖</div></div>
+        </div>
+        <div class="item-row locked">
+          <span class="item-name">BTC</span>
+          <span class="item-price" style="color:#3a5a7a">???</span>
+          <div class="item-actions"><div class="btn-buy">买</div><div class="btn-sell">卖</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 仓库面板 -->
+    <div class="panel" id="panel-warehouse">
+      <div class="wh-header">
+        <span class="trade-header" style="padding:0">我的仓库</span>
+        <span class="wh-capacity"><b>23</b> / 200 格</span>
+      </div>
+      <div class="wh-grid">
+        <div class="wh-card">
+          <div class="wh-icon">🥩</div>
+          <div class="wh-name">临期合成牛排</div>
+          <div class="wh-qty">×12</div>
+        </div>
+        <div class="wh-card">
+          <div class="wh-icon"></div>
+          <div class="wh-name">复古拉卜卜</div>
+          <div class="wh-qty">×5</div>
+        </div>
+        <div class="wh-card">
+          <div class="wh-icon">️</div>
+          <div class="wh-name">山寨VR眼镜</div>
+          <div class="wh-qty">×6</div>
+        </div>
+        <div class="wh-card empty">
+          <div class="wh-icon">·</div>
+          <div class="wh-name">空</div>
+          <div class="wh-qty">空位</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 地点面板 -->
+    <div class="panel" id="panel-map">
+      <div class="loc-section-title">
+        <span>选择目的地</span>
+        <span>每次移动刷新价格</span>
+      </div>
+      <div class="location-list">
+        <div class="loc-item active">
+          <div class="loc-icon">🏚️</div>
+          <div class="loc-info">
+            <div class="loc-name">城中村黑市</div>
+            <div class="loc-desc">杂乱但什么都有，价格适中</div>
+          </div>
+          <span class="loc-arrow">📍</span>
+        </div>
+        <div class="loc-item">
+          <div class="loc-icon"></div>
+          <div class="loc-info">
+            <div class="loc-name">天桥底下</div>
+            <div class="loc-desc">流动性大，价格波动剧烈</div>
+          </div>
+          <span class="loc-arrow">›</span>
+        </div>
+        <div class="loc-item">
+          <div class="loc-icon">🏗️</div>
+          <div class="loc-info">
+            <div class="loc-name">烂尾楼深处</div>
+            <div class="loc-desc">高风险高回报，偶有尖货</div>
+          </div>
+          <span class="loc-arrow">›</span>
+        </div>
+        <div class="loc-item">
+          <div class="loc-icon">🌉</div>
+          <div class="loc-info">
+            <div class="loc-name">高架桥洞</div>
+            <div class="loc-desc">偏门货多，价格两极分化</div>
+          </div>
+          <span class="loc-arrow">›</span>
+        </div>
+        <div class="loc-item">
+          <div class="loc-icon">🏭</div>
+          <div class="loc-info">
+            <div class="loc-name">废弃工厂</div>
+            <div class="loc-desc">大宗交易场所，量大优惠</div>
+          </div>
+          <span class="loc-arrow">›</span>
+        </div>
+        <div class="loc-item">
+          <div class="loc-icon">🛸</div>
+          <div class="loc-info">
+            <div class="loc-name">天台黑市</div>
+            <div class="loc-desc">顶级货色，价格离谱</div>
+          </div>
+          <span class="loc-arrow">›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 底部功能栏 -->
+<div class="bottom-bar">
+  <div class="venue-btn">
+    <span class="vv-icon">💰</span>
+    <span class="vv-name">汇款处</span>
+  </div>
+  <div class="venue-btn">
+    <span class="vv-icon"></span>
+    <span class="vv-name">邮局</span>
+  </div>
+  <div class="venue-btn disabled">
+    <span class="vv-icon">🏦</span>
+    <span class="vv-name">银行</span>
+  </div>
+  <div class="venue-btn">
+    <span class="vv-icon"></span>
+    <span class="vv-name">诊所</span>
+  </div>
+</div>
+
+<div class="scan-line"></div>
+
+<script>
+function switchTab(name, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+</script>
+</body>
+</html>
